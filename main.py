@@ -7,35 +7,12 @@ from yt_dlp import YoutubeDL
 DEFAULT_TITLE = "Eden Wrong"
 DEFAULT_DL_PATH = "~/Downloads/"
 
-TEST_URLS = [
-    "https://en.wikipedia.org/wiki/Eden_Woon",
-    "https://genius.com/Eden-wrong-lyrics",
-    "https://www.youtube.com/watch?v=3D-3zkeyfJs",
-    "https://www.azlyrics.com/lyrics/eden/wrong.html",
-    "https://www.lyricsondemand.com/eden/wrong",
-    "https://www.songlyrics.com/eden/wrong-lyrics/",
-    "https://www.youtube.com/watch?v=E0FfQsK9ExQ",
-    "https://www.songtell.com/eden/wrong",
-    "https://www.shazam.com/song/1440854326/wrong",
-    "https://www.letras.com/eden/wrong/",
-    "https://chordify.net/chords/eden-songs/wrong-chords",
-    "https://osu.ppy.sh/beatmapsets/944830",
-    "https://www.vagalume.com.br/eden/wrong.html",
-    "https://www.musixmatch.com/ja/lyrics/Eden/wrong",
-    "https://www.ouvirmusica.com.br/eden/wrong/",
-    "https://www.ilyricshub.com/lyrics-eden/",
-    "https://open.spotify.com/track/5743xMYXTQJvCIIiSRTXTZ",
-    "https://www.letras.com/the-eden-project/wrong/",
-    "https://mcmxcv.fandom.com/wiki/wrong",
-    "https://open.spotify.com/album/79Z3VtLMkzNNINdL6POnRK",
-]
-
 
 def parse_arguments():
     parser = ArgumentParser()
 
-    parser.add_argument("-t", "--title")
-    parser.add_argument("-u", "--url")
+    parser.add_argument("query")
+
     return parser.parse_args()
 
 
@@ -45,19 +22,10 @@ def search_videos(title=DEFAULT_TITLE, url=""):
     return results
 
 
-def filter_results(results, site="youtube.com/watch"):
-    if "www." not in site:
-        site = f"www.{site}"
-    if "https://" not in site:
-        site = f"https://{site}"
-    return [video for video in results if site in video["href"]]
-
-
 def select_video(videos: list):
     for i, result in enumerate(videos, start=1):
-        url = result["href"]
+        url = result["url"]
         title = result["title"]
-        body = result["body"]
 
         print(f"[{i}] {title}")
         print(f"    {url}", end="\n\n")
@@ -76,21 +44,46 @@ def select_video(videos: list):
 
 
 def download_video(selection: dict, path=DEFAULT_DL_PATH):
-    url = selection["href"]
+    url = selection["url"]
     print(url)
     with YoutubeDL() as ydl:
         ydl.download([url])
 
 
-def main():
-    args = parse_arguments()
-    url = args.url or None
-    title = args.title or DEFAULT_TITLE
+def youtube_search(query, max_results=5):
+    ydl_opts = {
+        "quiet": True,
+        "extract_flat": "in_playlist",
+        "skip_download": True,
+    }
+    with YoutubeDL(ydl_opts) as ydl:
+        search_query = f"ytsearch{max_results}:{query}"
+        info = ydl.extract_info(search_query, download=False)
+        return [
+            {"title": entry["title"], "url": entry["url"]} for entry in info["entries"]
+        ]
 
-    search = search_videos()
-    vids = filter_results(search)
-    selection = select_video(vids)
-    download_video(selection)
+
+def main():
+    try:
+        args = parse_arguments()
+        title = args.title
+        print(args)
+
+        if not args.title:
+            title = DEFAULT_TITLE
+        print(title)
+
+        vids = youtube_search(title, 5)
+        selection = select_video(vids)
+
+        download_video(selection)
+    except KeyboardInterrupt:
+        print("Exiting...")
+        exit(0)
+    except Exception as e:
+        print(e)
+        exit(1)
 
 
 if __name__ == "__main__":

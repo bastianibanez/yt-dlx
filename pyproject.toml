@@ -1,0 +1,13 @@
+[project]
+name = "yt-dlpx"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "beautifulsoup4>=4.14.2",
+    "ddgs>=9.6.0",
+    "requests>=2.32.5",
+    "tavily-python>=0.7.12",
+    "yt-dlp>=2025.9.26",
+]

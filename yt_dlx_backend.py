@@ -99,7 +99,7 @@ class YouTubeFetcher:
     # Download Logic
     # -----------------------------
     @staticmethod
-    def download_video(url: str, fmt: str, output_path: str):
+    def download_video(url: str, output_path: str, fmt="mp3"):
         output_path = os.path.expanduser(output_path)
         os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
         is_dir = not os.path.splitext(output_path)[1]

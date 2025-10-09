@@ -5,6 +5,9 @@ from typing import List, Dict
 import os
 import sys
 import re
+from rich import traceback, print
+
+traceback.install()
 
 
 @dataclass
